@@ -9,7 +9,7 @@ app = FastAPI()
 
 TEXT_RU_API_KEY = "3c957569f16140b682c791af6ec3176d"
 TEXT_RU_API_URL = "https://api.text.ru/post"
-TEXT_RU_GET_URL = "https://api.text.ru/post/get/json"
+TEXT_RU_GET_URL = "https://api.text.ru/post/get"
 
 logging.basicConfig(level=logging.INFO)
 
