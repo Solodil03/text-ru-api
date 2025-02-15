@@ -7,8 +7,8 @@ import os
 app = FastAPI()
 
 TEXT_RU_API_KEY = "3c957569f16140b682c791af6ec3176d"
-TEXT_RU_API_URL = "https://api.text.ru/post"
-TEXT_RU_GET_URL = "https://api.text.ru/post/get/json"
+TEXT_RU_API_URL = "https://text.ru/antiplagiat/"
+TEXT_RU_GET_URL = "https://text.ru/antiplagiat/"
 
 logging.basicConfig(level=logging.INFO)
 
@@ -21,7 +21,8 @@ def check_text(request: TextRequest):
         "text": request.text,
         "userkey": TEXT_RU_API_KEY
     }
-    logging.info(f"Отправляем запрос в Text.ru: {payload}")
+    logging.info(f"Отправляем текст в Text.ru: {payload}")
+    
     response = requests.post(TEXT_RU_API_URL, data=payload)
     logging.info(f"Ответ от Text.ru: {response.text}")
 
@@ -34,11 +35,15 @@ def check_text(request: TextRequest):
         logging.error(f"Ошибка парсинга JSON: {e}")
         raise HTTPException(status_code=500, detail=f"Ошибка парсинга JSON: {response.text}")
 
-    if "text_uid" not in result:
+    if "error_code" in result:
         logging.error(f"Ошибка API Text.ru: {result}")
         raise HTTPException(status_code=500, detail=f"Ошибка Text.ru: {result.get('error_desc', 'Неизвестная ошибка')}")
 
-    return {"text_uid": result.get("text_uid")}
+    text_uid = result.get("text_uid") or result.get("order")
+    if not text_uid:
+        raise HTTPException(status_code=500, detail="Text.ru не вернул UID.")
+
+    return {"text_uid": text_uid}
 
 @app.get("/get_result")
 def get_result(uid: str):
@@ -48,7 +53,8 @@ def get_result(uid: str):
         "jsonvisible": "detail"
     }
     logging.info(f"Запрос на получение результата: {payload}")
-    response = requests.post(TEXT_RU_GET_URL, data=payload)
+    
+    response = requests.post(f"{TEXT_RU_GET_URL}{uid}", data=payload)
     logging.info(f"Ответ от Text.ru: {response.text}")
 
     if response.status_code != 200:
@@ -59,6 +65,9 @@ def get_result(uid: str):
     except Exception as e:
         logging.error(f"Ошибка парсинга JSON: {e}")
         raise HTTPException(status_code=500, detail=f"Ошибка парсинга JSON: {response.text}")
+
+    if "error_code" in result:
+        raise HTTPException(status_code=500, detail=f"Ошибка Text.ru: {result.get('error_desc', 'Неизвестная ошибка')}")
 
     return {"full_response": result}
 
