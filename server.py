@@ -23,7 +23,7 @@ def check_text(request: TextRequest):
         "userkey": TEXT_RU_API_KEY
     }
     logging.info(f"Отправляем запрос в Text.ru: {payload}")
-    response = requests.get(TEXT_RU_GET_URL, params=payload)
+    response = requests.post(TEXT_RU_API_URL, data=payload)  # ✅ Исправил на `post`
     logging.info(f"Ответ от Text.ru: {response.text}")
 
     if response.status_code != 200:
@@ -45,7 +45,7 @@ def get_result(uid: str):
         "jsonvisible": "detail"
     }
     logging.info(f"Запрос на получение результата: {payload}")
-    response = requests.post(TEXT_RU_GET_URL, data=payload)
+    response = requests.post(TEXT_RU_GET_URL, data=payload)  # ✅ Оставил `post`, как требуется API
     logging.info(f"Ответ от Text.ru: {response.text}")
 
     if response.status_code != 200:
@@ -60,7 +60,7 @@ def get_result(uid: str):
     return {"full_response": result}
 
 if __name__ == "__main__":
-     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))  # ✅ Исправленный отступ
+
 
 
