@@ -23,7 +23,7 @@ def check_text(request: TextRequest):
         "userkey": TEXT_RU_API_KEY
     }
     logging.info(f"Отправляем запрос в Text.ru: {payload}")
-    response = requests.post(TEXT_RU_API_URL, data=payload)
+    response = requests.get(TEXT_RU_GET_URL, params=payload)
     logging.info(f"Ответ от Text.ru: {response.text}")
 
     if response.status_code != 200:
